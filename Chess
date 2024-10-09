@@ -1,0 +1,61 @@
+import chess
+import chess.engine
+
+# Board setup
+board = chess.Board()
+
+# Minimax algorithm
+def minimax(depth, board, is_maximizing):
+    if depth == 0 or board.is_game_over():
+        return evaluate_board(board)
+    
+    if is_maximizing:
+        max_eval = float('-inf')
+        for move in board.legal_moves:
+            board.push(move)
+            eval = minimax(depth-1, board, False)
+            board.pop()
+            max_eval = max(max_eval, eval)
+        return max_eval
+    else:
+        min_eval = float('inf')
+        for move in board.legal_moves:
+            board.push(move)
+            eval = minimax(depth-1, board, True)
+            board.pop()
+            min_eval = min(min_eval, eval)
+        return min_eval
+
+# Basic evaluation function
+def evaluate_board(board):
+    evaluation = 0
+    piece_values = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9}
+    for piece in piece_values:
+        evaluation += len(board.pieces(piece, chess.WHITE)) * piece_values[piece]
+        evaluation -= len(board.pieces(piece, chess.BLACK)) * piece_values[piece]
+    return evaluation
+
+# Move selection
+def get_best_move(board, depth):
+    best_move = None
+    best_value = float('-inf')
+    for move in board.legal_moves:
+        board.push(move)
+        board_value = minimax(depth - 1, board, False)
+        board.pop()
+        if board_value > best_value:
+            best_value = board_value
+            best_move = move
+    return best_move
+
+# Main loop
+depth = 3
+while not board.is_game_over():
+    if board.turn == chess.WHITE:
+        move = get_best_move(board, depth)
+        board.push(move)
+    else:
+        user_move = input("Enter your move: ")
+        board.push_san(user_move)
+
+print("Game Over")
